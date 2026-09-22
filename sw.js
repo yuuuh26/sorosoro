@@ -1,7 +1,11 @@
-const CACHE_NAME = 'sorosoro-v1.1.3';
+const CACHE_NAME = 'sorosoro-v1.1.4';
 const APP_SHELL = [
-  './', './index.html', './styles.css', './manifest.webmanifest',
-  './js/app.js', './js/db.js', './js/date.js',
+  './', './index.html',
+  './styles.css?v=1.1.4',
+  './manifest.webmanifest?v=1.1.4',
+  './js/app.js?v=1.1.4',
+  './js/db.js?v=1.1.4',
+  './js/date.js?v=1.1.4',
   './assets/icon-192.png', './assets/icon-512.png',
   './assets/icon-maskable-192.png', './assets/icon-maskable-512.png'
 ];
