@@ -10,28 +10,20 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="192x192" href="./assets/icon-192.png">
   <link rel="apple-touch-icon" href="./assets/icon-192.png">
-  <link rel="stylesheet" href="./styles-v120.css">
+  <link rel="stylesheet" href="./styles-v120.css?v=1.2.2">
 </head>
 <body>
   <div class="app-shell">
     <header class="app-header">
-      <div><p class="eyebrow"><span id="todayLabel"></span><span class="build-version">v1.2.1</span></p><h1 id="pageTitle" class="brand-title">Soro Soro</h1></div>
+      <div><p class="eyebrow"><span id="todayLabel"></span><span class="build-version">v1.2.2</span></p><h1 id="pageTitle" class="brand-title">Soro Soro</h1></div>
       <button class="icon-button" id="quickAdd" type="button" aria-label="項目を追加"><span aria-hidden="true">＋</span></button>
     </header>
 
     <main id="mainContent" tabindex="-1">
       <section class="view active" id="homeView" data-view="home" aria-labelledby="pageTitle">
         <div class="summary-grid" id="summaryGrid" aria-label="現在の状況"></div>
-        <div class="section-heading"><div><p class="section-kicker">優先順</p><h2>今、気にしたいこと</h2></div><span class="count-badge" id="homeCount">0件</span></div>
+        <div class="section-heading"><div><p class="section-kicker">優先順</p><h2>登録している項目</h2></div><span class="count-badge" id="homeCount">0件</span></div>
         <div class="item-list" id="homeList"></div>
-      </section>
-      <section class="view" id="shortView" data-view="short" aria-labelledby="pageTitle">
-        <div class="section-heading compact-heading"><div><p class="section-kicker">SHORT CYCLE</p><h2>短期の項目</h2></div><span class="count-badge" id="shortCount">0件</span></div>
-        <div class="item-list" id="shortList"></div>
-      </section>
-      <section class="view" id="longView" data-view="long" aria-labelledby="pageTitle">
-        <div class="section-heading compact-heading"><div><p class="section-kicker">LONG CYCLE</p><h2>長期の項目</h2></div><span class="count-badge" id="longCount">0件</span></div>
-        <div class="item-list" id="longList"></div>
       </section>
       <section class="view" id="historyView" data-view="history" aria-labelledby="pageTitle">
         <div class="history-toolbar"><label for="historyFilter">表示する項目</label><select id="historyFilter"><option value="all">すべて</option></select></div>
@@ -43,15 +35,13 @@
           <section class="settings-card"><h2>データ</h2><div class="setting-row"><span>端末保存</span><strong id="dbStatus">確認中</strong></div><div class="setting-row"><span>永続ストレージ</span><strong id="persistStatus">確認中</strong></div><button class="secondary-button full" id="requestPersist" type="button">永続化を申請</button></section>
           <section class="settings-card"><h2>停止中の項目</h2><div id="pausedList" class="paused-list"></div></section>
           <section class="settings-card"><h2>URL</h2><div class="url-block"><span>アプリURL</span><code id="appUrl">https://yuuuh26.github.io/sorosoro/</code><button class="copy-button" data-copy="app" type="button">コピー</button></div><div class="url-block"><span>GitHubリポジトリURL</span><code id="repoUrl">https://github.com/yuuuh26/sorosoro</code><button class="copy-button" data-copy="repo" type="button">コピー</button></div></section>
-          <section class="about-card"><img src="./assets/icon-192.png" width="64" height="64" alt=""><div><h2>Soro Soro</h2><p>v1.2.1</p><p>Made by YUU</p></div></section>
+          <section class="about-card"><img src="./assets/icon-192.png" width="64" height="64" alt=""><div><h2>Soro Soro</h2><p>v1.2.2</p><p>Made by YUU</p></div></section>
         </div>
       </section>
     </main>
 
     <nav class="bottom-nav" aria-label="メインメニュー">
       <button class="nav-button active" type="button" data-route="home"><span aria-hidden="true">⌂</span><small>ホーム</small></button>
-      <button class="nav-button" type="button" data-route="short"><span aria-hidden="true">↻</span><small>短期</small></button>
-      <button class="nav-button" type="button" data-route="long"><span aria-hidden="true">▣</span><small>長期</small></button>
       <button class="nav-button" type="button" data-route="history"><span aria-hidden="true">◷</span><small>履歴</small></button>
       <button class="nav-button" type="button" data-route="settings"><span aria-hidden="true">⚙</span><small>設定</small></button>
     </nav>
@@ -65,7 +55,6 @@
         <label class="field name-field"><span>項目名 <em>必須</em></span><input id="itemName" required maxlength="40" placeholder="お茶ポット洗浄"></label>
         <fieldset class="field cycle-field"><legend>周期 <em>必須</em></legend><div class="inline-fields"><input id="intervalValue" type="number" min="1" max="999" value="7" required aria-label="周期の数値"><select id="intervalUnit" aria-label="周期の単位"><option value="day">日ごと</option><option value="week">週ごと</option><option value="month">か月ごと</option></select></div></fieldset>
         <label class="field"><span>前回実施日 <em>必須</em></span><input id="lastCompletedDate" type="date" required></label>
-        <label class="field"><span>表示場所</span><select id="itemTab"><option value="short">短期</option><option value="long">長期</option></select></label>
         <label class="field"><span>ホーム浮上</span><div class="suffix-input"><input id="riseDays" type="number" min="0" max="365" value="3"><span>日前から</span></div></label>
         <label class="switch-field"><span><strong>ホームへ常時表示</strong><small>期限前でもホームに表示</small></span><input id="pinHome" type="checkbox" role="switch"></label>
         <label class="switch-field privacy-switch"><span><strong>プライベート項目</strong><small>通常時は一覧・履歴から隠す</small></span><input id="itemPrivate" type="checkbox" role="switch"></label>
@@ -95,6 +84,6 @@
       }
     })();
   </script>
-  <script defer src="./js/app-v120.js?v=1.2.1"></script>
+  <script defer src="./js/app-v120.js?v=1.2.2"></script>
 </body>
 </html>
