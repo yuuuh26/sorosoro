@@ -278,7 +278,6 @@ function openItemForm(item = null) {
   $('#intervalValue').value = item?.intervalValue || 7;
   $('#intervalUnit').value = item?.intervalUnit || 'day';
   $('#lastCompletedDate').value = item?.lastCompletedDate || toDateKey();
-  $('#itemTab').value = item?.tab || (state.route === 'long' ? 'long' : 'short');
   $('#riseDays').value = item?.riseDays ?? 3;
   $('#pinHome').checked = item?.pinHome || false;
   $('#itemPrivate').checked = item?.private || false;
@@ -302,7 +301,7 @@ async function saveItem(event) {
   const item = {
     id: oldItem?.id || uid('item'), name, icon: oldItem?.icon || '✓', category: oldItem?.category || '',
     intervalValue, intervalUnit: $('#intervalUnit').value, lastCompletedDate,
-    nextDueDate: addInterval(lastCompletedDate, intervalValue, $('#intervalUnit').value), tab: $('#itemTab').value,
+    nextDueDate: addInterval(lastCompletedDate, intervalValue, $('#intervalUnit').value), tab: oldItem?.tab || 'short',
     pinHome: $('#pinHome').checked, riseDays: Math.max(0, Number($('#riseDays').value) || 0), note: $('#itemNote').value.trim(), private: $('#itemPrivate').checked,
     active: oldItem?.active ?? true, createdAt: oldItem?.createdAt || now, updatedAt: now,
   };
