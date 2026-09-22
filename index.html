@@ -7,15 +7,15 @@
   <meta name="description" content="暮らしの周期を軽やかに整える、Soro Soro 周期管理アプリ">
   <meta name="robots" content="noindex, nofollow, noarchive">
   <title>Soro Soro</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=1.1.4">
+  <link rel="manifest" href="./manifest.webmanifest?v=1.1.5">
   <link rel="icon" type="image/png" sizes="192x192" href="./assets/icon-192.png">
   <link rel="apple-touch-icon" href="./assets/icon-192.png">
-  <link rel="stylesheet" href="./styles.css?v=1.1.4">
+  <link rel="stylesheet" href="./styles.css?v=1.1.5">
 </head>
 <body>
   <div class="app-shell">
     <header class="app-header">
-      <div class="brand-block"><p class="eyebrow" id="todayLabel"></p><h1 id="pageTitle" class="brand-title">Soro Soro</h1></div>
+      <div class="brand-block"><p class="eyebrow"><span id="todayLabel"></span><span class="build-version">v1.1.5</span></p><h1 id="pageTitle" class="brand-title">Soro Soro</h1></div>
       <button class="icon-button" id="quickAdd" type="button" aria-label="項目を追加"><span aria-hidden="true">＋</span></button>
     </header>
 
@@ -43,7 +43,7 @@
           <section class="settings-card"><h2>データ</h2><div class="setting-row"><span>端末保存</span><strong id="dbStatus">確認中</strong></div><div class="setting-row"><span>永続ストレージ</span><strong id="persistStatus">確認中</strong></div><button class="secondary-button full" id="requestPersist" type="button">永続化を申請</button></section>
           <section class="settings-card"><h2>停止中の項目</h2><div id="pausedList" class="paused-list"></div></section>
           <section class="settings-card"><h2>URL</h2><div class="url-block"><span>アプリURL</span><code id="appUrl">https://yuuuh26.github.io/sorosoro/</code><button class="copy-button" data-copy="app" type="button">コピー</button></div><div class="url-block"><span>GitHubリポジトリURL</span><code id="repoUrl">https://github.com/yuuuh26/sorosoro</code><button class="copy-button" data-copy="repo" type="button">コピー</button></div></section>
-          <section class="about-card"><img src="./assets/icon-192.png" width="64" height="64" alt=""><div><h2>Soro Soro</h2><p>v1.1.4</p><p>Made by YUU</p></div></section>
+          <section class="about-card"><img src="./assets/icon-192.png" width="64" height="64" alt=""><div><h2>Soro Soro</h2><p>v1.1.5</p><p>Made by YUU</p></div></section>
         </div>
       </section>
     </main>
@@ -81,6 +81,30 @@
   <dialog id="confirmDialog" class="confirm-dialog"><form method="dialog"><h2 id="confirmTitle">確認</h2><p id="confirmMessage"></p><div class="modal-actions"><button value="cancel" class="secondary-button">キャンセル</button><button value="confirm" class="danger-solid">削除する</button></div></form></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"><div><strong id="toastTitle"></strong><span id="toastMessage"></span></div><button id="toastAction" type="button" hidden>取り消す</button></div>
   <div class="legacy-privacy-compat" hidden aria-hidden="true"><button id="privacyToggle" type="button"><span id="privacyIcon"></span><small id="privacyLabel"></small></button><button id="privacyBottomToggle" type="button"><span id="privacyNavIcon"></span><small id="privacyNavLabel"></small></button></div>
-  <script type="module" src="./js/app.js?v=1.1.4"></script>
+  <script>
+    window.__SOROSORO_APP_READY__ = false;
+    window.__SOROSORO_BUILD__ = '1.1.5';
+    window.addEventListener('DOMContentLoaded', () => {
+      window.setTimeout(async () => {
+        if (window.__SOROSORO_APP_READY__) return;
+        const recoveryKey = 'sorosoro-recovery-1.1.5';
+        if (sessionStorage.getItem(recoveryKey)) return;
+        sessionStorage.setItem(recoveryKey, '1');
+        try {
+          if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(registrations.filter((registration) => registration.scope.includes('/sorosoro/')).map((registration) => registration.unregister()));
+          }
+          if ('caches' in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.filter((key) => key.startsWith('sorosoro-')).map((key) => caches.delete(key)));
+          }
+        } finally {
+          location.reload();
+        }
+      }, 1800);
+    });
+  </script>
+  <script type="module" src="./js/app.js?v=1.1.5"></script>
 </body>
 </html>
