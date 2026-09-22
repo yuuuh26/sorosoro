@@ -1,5 +1,5 @@
-import { STORES, DB_VERSION, openDatabase, getAll, getOne, putOne, deleteOne, saveItemWithHistory, deleteItemAndHistory, getHistoryForItem } from './db.js?v=1.1.4';
-import { toDateKey, addInterval, formatDate, formatLongDate, getDueState, intervalLabel } from './date.js?v=1.1.4';
+import { STORES, DB_VERSION, openDatabase, getAll, getOne, putOne, deleteOne, saveItemWithHistory, deleteItemAndHistory, getHistoryForItem } from './db.js?v=1.1.5';
+import { toDateKey, addInterval, formatDate, formatLongDate, getDueState, intervalLabel } from './date.js?v=1.1.5';
 
 const APP_URL = 'https://yuuuh26.github.io/sorosoro/';
 const REPO_URL = 'https://github.com/yuuuh26/sorosoro';
@@ -358,6 +358,7 @@ async function initialize() {
   if ($('#appUrl')) $('#appUrl').textContent = APP_URL;
   if ($('#repoUrl')) $('#repoUrl').textContent = REPO_URL;
   bindEvents();
+  window.__SOROSORO_APP_READY__ = true;
   try {
     await openDatabase();
     await putOne(STORES.settings, { key: 'schemaVersion', value: DB_VERSION, updatedAt: new Date().toISOString() });
@@ -369,7 +370,7 @@ async function initialize() {
     showToast('保存機能を使用できません', 'ブラウザ設定を確認してください');
     console.error(error);
   }
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(console.error);
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=1.1.5', { updateViaCache: 'none' }).then((registration) => registration.update()).catch(console.error);
 }
 
 initialize();
