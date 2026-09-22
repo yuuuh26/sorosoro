@@ -3,7 +3,7 @@ import { toDateKey, addInterval, formatDate, formatLongDate, getDueState, interv
 
 const APP_URL = 'https://yuuuh26.github.io/sorosoro/';
 const REPO_URL = 'https://github.com/yuuuh26/sorosoro';
-const state = { items: [], history: [], route: 'home', undo: null, toastTimer: null };
+const state = { items: [], history: [], route: 'home', undo: null, toastTimer: null, privacyVisible: false };
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const uid = (prefix) => `${prefix}-${Date.now()}-${crypto.randomUUID?.() || Math.random().toString(36).slice(2)}`;
@@ -20,6 +20,9 @@ async function refreshData() {
 }
 
 const activeItems = () => state.items.filter((item) => item.active !== false);
+const itemIsVisible = (item) => state.privacyVisible || item.private !== true;
+const visibleItems = () => state.items.filter(itemIsVisible);
+const visibleActiveItems = () => activeItems().filter(itemIsVisible);
 
 function sortedItems(items) {
   return [...items].sort((a, b) => {
@@ -30,18 +33,19 @@ function sortedItems(items) {
 }
 
 function homeItems() {
-  return sortedItems(activeItems().filter((item) => item.pinHome || getDueState(item).diff <= Number(item.riseDays || 0)));
+  return sortedItems(visibleActiveItems().filter((item) => item.pinHome || getDueState(item).diff <= Number(item.riseDays || 0)));
 }
 
 function renderSummary() {
-  const dueStates = activeItems().map((item) => getDueState(item));
+  const dueStates = visibleActiveItems().map((item) => getDueState(item));
   const count = (key) => dueStates.filter((entry) => entry.key === key).length;
   $('#summaryGrid').innerHTML = `<div class="summary-card over"><span>超過</span><strong>${count('overdue')}件</strong></div><div class="summary-card today"><span>今日</span><strong>${count('today')}件</strong></div><div class="summary-card soon"><span>もうすぐ</span><strong>${count('soon')}件</strong></div>`;
 }
 
 function itemCard(item) {
   const due = getDueState(item);
-  return `<article class="item-card state-${due.key}" data-item-id="${item.id}"><div class="card-top"><div class="item-emoji" aria-hidden="true">${escapeHtml(item.icon || '✓')}</div><div class="card-main"><p class="status-line">${due.label}</p><h3 class="item-name">${escapeHtml(item.name)}</h3><div class="item-meta"><span>前回 ${formatDate(item.lastCompletedDate)}</span><span>予定 ${formatDate(item.nextDueDate)}</span><span>${intervalLabel(item)}</span></div></div></div><div class="card-actions"><button class="done-button" type="button" data-action="done" data-id="${item.id}">やった ✓</button><button class="detail-button" type="button" data-action="detail" data-id="${item.id}">詳細</button></div></article>`;
+  const privateBadge = item.private ? '<span class="privacy-badge">PRIVATE</span>' : '';
+  return `<article class="item-card state-${due.key}${item.private ? ' is-private' : ''}" data-item-id="${item.id}"><div class="card-top"><div class="item-emoji" aria-hidden="true">${escapeHtml(item.icon || '✓')}</div><div class="card-main"><p class="status-line"><span>${due.label}</span>${privateBadge}</p><h3 class="item-name">${escapeHtml(item.name)}</h3><div class="item-meta"><span>前回 ${formatDate(item.lastCompletedDate)}</span><span>予定 ${formatDate(item.nextDueDate)}</span><span>${intervalLabel(item)}</span></div></div></div><div class="card-actions"><button class="done-button" type="button" data-action="done" data-id="${item.id}">やった ✓</button><button class="detail-button" type="button" data-action="detail" data-id="${item.id}">詳細</button></div></article>`;
 }
 
 function emptyState(kind) {
@@ -52,8 +56,8 @@ function emptyState(kind) {
 function renderLists() {
   const groups = {
     home: homeItems(),
-    short: sortedItems(activeItems().filter((item) => item.tab === 'short')),
-    long: sortedItems(activeItems().filter((item) => item.tab === 'long')),
+    short: sortedItems(visibleActiveItems().filter((item) => item.tab === 'short')),
+    long: sortedItems(visibleActiveItems().filter((item) => item.tab === 'long')),
   };
   Object.entries(groups).forEach(([key, items]) => {
     $(`#${key}List`).innerHTML = items.length ? items.map(itemCard).join('') : emptyState(key);
@@ -64,14 +68,15 @@ function renderLists() {
 function renderHistoryFilter() {
   const filter = $('#historyFilter');
   const current = filter.value;
-  filter.innerHTML = '<option value="all">すべて</option>' + [...state.items].sort((a, b) => a.name.localeCompare(b.name, 'ja')).map((item) => `<option value="${item.id}">${escapeHtml(item.icon)} ${escapeHtml(item.name)}</option>`).join('');
+  filter.innerHTML = '<option value="all">すべて</option>' + visibleItems().sort((a, b) => a.name.localeCompare(b.name, 'ja')).map((item) => `<option value="${item.id}">${escapeHtml(item.icon)} ${escapeHtml(item.name)}</option>`).join('');
   filter.value = [...filter.options].some((option) => option.value === current) ? current : 'all';
 }
 
 function renderHistory() {
   renderHistoryFilter();
   const filter = $('#historyFilter').value;
-  const entries = state.history.filter((entry) => filter === 'all' || entry.itemId === filter).sort((a, b) => b.performedDate.localeCompare(a.performedDate) || b.createdAt.localeCompare(a.createdAt));
+  const visibleItemIds = new Set(visibleItems().map((item) => item.id));
+  const entries = state.history.filter((entry) => visibleItemIds.has(entry.itemId) && (filter === 'all' || entry.itemId === filter)).sort((a, b) => b.performedDate.localeCompare(a.performedDate) || b.createdAt.localeCompare(a.createdAt));
   if (!entries.length) {
     $('#historyList').innerHTML = '<div class="empty-state"><span class="empty-icon">◷</span><h3>履歴はまだありません</h3><p>「やった」を押すと、実施日がここに残ります。</p></div>';
     return;
@@ -85,18 +90,39 @@ function renderHistory() {
 }
 
 function renderPaused() {
-  const paused = state.items.filter((item) => item.active === false);
+  const paused = state.items.filter((item) => item.active === false && itemIsVisible(item));
   $('#pausedList').innerHTML = paused.length ? paused.map((item) => `<div class="paused-row"><b>${escapeHtml(item.icon)}</b><span>${escapeHtml(item.name)}</span><button type="button" data-action="resume" data-id="${item.id}">再開</button></div>`).join('') : '<p class="muted-copy">停止中の項目はありません。</p>';
 }
 
-function renderAll() { renderSummary(); renderLists(); renderHistory(); renderPaused(); }
+function renderPrivacyControls() {
+  const privateCount = state.items.filter((item) => item.private === true).length;
+  const toggle = $('#privacyToggle');
+  toggle.classList.toggle('active', state.privacyVisible);
+  toggle.setAttribute('aria-pressed', String(state.privacyVisible));
+  toggle.setAttribute('aria-label', state.privacyVisible ? 'プライベート項目を隠す' : 'プライベート項目を表示');
+  $('#privacyIcon').textContent = state.privacyVisible ? '👁' : '🔒';
+  $('#privacyLabel').textContent = state.privacyVisible ? 'OPEN' : 'PRIVATE';
+  $('#privacyState').textContent = state.privacyVisible ? `表示中 ${privateCount}件` : `非表示 ${privateCount}件`;
+  $('#privacyState').classList.toggle('active', state.privacyVisible);
+  $('#privacySettingsToggle').textContent = state.privacyVisible ? 'プライベート項目を隠す' : 'プライベート項目を表示';
+}
+
+function togglePrivacyMode() {
+  state.privacyVisible = !state.privacyVisible;
+  if (!state.privacyVisible && $('#detailDialog').open) $('#detailDialog').close();
+  renderAll();
+  showToast(state.privacyVisible ? 'プライベート項目を表示中' : 'プライベート項目を隠しました', state.privacyVisible ? '再読み込みすると自動で非表示に戻ります' : '通常表示に戻りました');
+}
+
+function renderAll() { renderSummary(); renderLists(); renderHistory(); renderPaused(); renderPrivacyControls(); }
 
 function switchRoute(route) {
   state.route = route;
-  const titles = { home: 'そろそろ', short: '短期', long: '長期', history: '履歴', settings: '設定' };
-  $$('.view').forEach((view) => view.classList.toggle('active', view.dataset.view === route));
-  $$('.nav-button').forEach((button) => button.classList.toggle('active', button.dataset.route === route));
+  const titles = { home: 'Soro Soro', short: '短期', long: '長期', history: '履歴', settings: '設定' };
+  $('.view').forEach((view) => view.classList.toggle('active', view.dataset.view === route));
+  $('.nav-button').forEach((button) => button.classList.toggle('active', button.dataset.route === route));
   $('#pageTitle').textContent = titles[route];
+  $('#pageTitle').classList.toggle('brand-title', route === 'home');
   window.scrollTo({ top: 0, behavior: 'smooth' });
   $('#mainContent').focus({ preventScroll: true });
 }
@@ -107,13 +133,13 @@ function openItemForm(item = null) {
   $('#itemId').value = item?.id || '';
   $('#itemIcon').value = item?.icon || '🫖';
   $('#itemName').value = item?.name || '';
-  $('#itemCategory').value = item?.category || '🏠 家事';
   $('#intervalValue').value = item?.intervalValue || 7;
   $('#intervalUnit').value = item?.intervalUnit || 'day';
   $('#lastCompletedDate').value = item?.lastCompletedDate || toDateKey();
   $('#itemTab').value = item?.tab || (state.route === 'long' ? 'long' : 'short');
   $('#riseDays').value = item?.riseDays ?? 3;
   $('#pinHome').checked = item?.pinHome || false;
+  $('#itemPrivate').checked = item?.private || false;
   $('#itemNote').value = item?.note || '';
   $('#formError').textContent = '';
   $('#itemDialog').showModal();
@@ -132,10 +158,11 @@ async function saveItem(event) {
   }
   const now = new Date().toISOString();
   const item = {
-    id: oldItem?.id || uid('item'), name, icon: $('#itemIcon').value.trim() || '✓', category: $('#itemCategory').value,
+    id: oldItem?.id || uid('item'), name, icon: $('#itemIcon').value.trim() || '✓',
     intervalValue, intervalUnit: $('#intervalUnit').value, lastCompletedDate,
     nextDueDate: addInterval(lastCompletedDate, intervalValue, $('#intervalUnit').value), tab: $('#itemTab').value,
     pinHome: $('#pinHome').checked, riseDays: Math.max(0, Number($('#riseDays').value) || 0), note: $('#itemNote').value.trim(),
+    private: $('#itemPrivate').checked,
     active: oldItem?.active ?? true, createdAt: oldItem?.createdAt || now, updatedAt: now,
   };
   let initialHistory = null;
@@ -149,7 +176,7 @@ async function saveItem(event) {
     $('#itemDialog').close();
     await requestPersistentStorage(false);
     await refreshData();
-    showToast('保存しました', `${item.name}を更新しました`);
+    showToast('保存しました', item.private && !state.privacyVisible ? 'プライベート項目として保存し、通常表示から隠しました' : `${item.name}を更新しました`);
   } catch (error) {
     $('#formError').textContent = '保存できませんでした。空き容量などを確認してください。';
     console.error(error);
@@ -192,7 +219,7 @@ function openDetail(itemId) {
   if (!item) return;
   const due = getDueState(item);
   const count = state.history.filter((entry) => entry.itemId === item.id).length;
-  $('#detailContent').innerHTML = `<div class="modal-header"><div class="detail-hero"><div class="item-emoji">${escapeHtml(item.icon)}</div><div><span class="detail-status">${due.label}</span><h2>${escapeHtml(item.name)}</h2></div></div><button class="close-button" type="button" data-close="detailDialog" aria-label="閉じる">×</button></div><div class="detail-grid"><div class="detail-stat"><span>前回</span><strong>${formatDate(item.lastCompletedDate, true)}</strong></div><div class="detail-stat"><span>次回予定</span><strong>${formatDate(item.nextDueDate, true)}</strong></div><div class="detail-stat"><span>周期</span><strong>${intervalLabel(item)}</strong></div><div class="detail-stat"><span>ホーム浮上</span><strong>${item.pinHome ? '常時表示' : `${item.riseDays}日前`}</strong></div><div class="detail-stat"><span>分類</span><strong>${item.tab === 'short' ? '短期' : '長期'}</strong></div><div class="detail-stat"><span>履歴</span><strong>${count}件</strong></div></div>${item.note ? `<div class="note-box">${escapeHtml(item.note)}</div>` : ''}<div class="detail-actions"><button class="done-button" type="button" data-action="done" data-id="${item.id}">今日やった ✓</button><button class="secondary-button" type="button" data-action="done-date" data-id="${item.id}">日付を指定</button><button class="secondary-button" type="button" data-action="edit" data-id="${item.id}">編集</button><button class="secondary-button" type="button" data-action="item-history" data-id="${item.id}">履歴を見る</button><button class="secondary-button" type="button" data-action="pause" data-id="${item.id}">一時停止</button><button class="danger-button" type="button" data-action="delete-item" data-id="${item.id}">削除</button></div>`;
+  $('#detailContent').innerHTML = `<div class="modal-header"><div class="detail-hero"><div class="item-emoji">${escapeHtml(item.icon)}</div><div><span class="detail-status">${due.label}</span><h2>${escapeHtml(item.name)}</h2></div></div><button class="close-button" type="button" data-close="detailDialog" aria-label="閉じる">×</button></div><div class="detail-grid"><div class="detail-stat"><span>前回</span><strong>${formatDate(item.lastCompletedDate, true)}</strong></div><div class="detail-stat"><span>次回予定</span><strong>${formatDate(item.nextDueDate, true)}</strong></div><div class="detail-stat"><span>周期</span><strong>${intervalLabel(item)}</strong></div><div class="detail-stat"><span>ホーム浮上</span><strong>${item.pinHome ? '常時表示' : `${item.riseDays}日前`}</strong></div><div class="detail-stat"><span>表示場所</span><strong>${item.tab === 'short' ? '短期' : '長期'}</strong></div><div class="detail-stat"><span>プライバシー</span><strong>${item.private ? 'プライベート' : '通常'}</strong></div><div class="detail-stat"><span>履歴</span><strong>${count}件</strong></div></div>${item.note ? `<div class="note-box">${escapeHtml(item.note)}</div>` : ''}<div class="detail-actions"><button class="done-button" type="button" data-action="done" data-id="${item.id}">今日やった ✓</button><button class="secondary-button" type="button" data-action="done-date" data-id="${item.id}">日付を指定</button><button class="secondary-button" type="button" data-action="edit" data-id="${item.id}">編集</button><button class="secondary-button" type="button" data-action="item-history" data-id="${item.id}">履歴を見る</button><button class="secondary-button" type="button" data-action="pause" data-id="${item.id}">一時停止</button><button class="danger-button" type="button" data-action="delete-item" data-id="${item.id}">削除</button></div>`;
   $('#detailDialog').showModal();
 }
 
@@ -263,6 +290,8 @@ async function copyText(text) {
 function bindEvents() {
   $$('.nav-button').forEach((button) => button.addEventListener('click', () => switchRoute(button.dataset.route)));
   $('#quickAdd').addEventListener('click', () => openItemForm());
+  $('#privacyToggle').addEventListener('click', togglePrivacyMode);
+  $('#privacySettingsToggle').addEventListener('click', togglePrivacyMode);
   $('#itemForm').addEventListener('submit', saveItem);
   $('#historyFilter').addEventListener('change', renderHistory);
   $('#toastAction').addEventListener('click', undoCompletion);
