@@ -16,10 +16,7 @@
   <div class="app-shell">
     <header class="app-header">
       <div class="brand-block"><p class="eyebrow" id="todayLabel"></p><h1 id="pageTitle" class="brand-title">Soro Soro</h1></div>
-      <div class="header-actions">
-        <button class="privacy-button" id="privacyToggle" type="button" aria-label="プライベート項目を表示" aria-pressed="false"><span id="privacyIcon" aria-hidden="true">🔒</span><small id="privacyLabel">PRIVATE</small></button>
-        <button class="icon-button" id="quickAdd" type="button" aria-label="項目を追加"><span aria-hidden="true">＋</span></button>
-      </div>
+      <button class="icon-button" id="quickAdd" type="button" aria-label="項目を追加"><span aria-hidden="true">＋</span></button>
     </header>
 
     <main id="mainContent" tabindex="-1">
@@ -46,7 +43,7 @@
           <section class="settings-card"><h2>データ</h2><div class="setting-row"><span>端末保存</span><strong id="dbStatus">確認中</strong></div><div class="setting-row"><span>永続ストレージ</span><strong id="persistStatus">確認中</strong></div><button class="secondary-button full" id="requestPersist" type="button">永続化を申請</button></section>
           <section class="settings-card"><h2>停止中の項目</h2><div id="pausedList" class="paused-list"></div></section>
           <section class="settings-card"><h2>URL</h2><div class="url-block"><span>アプリURL</span><code id="appUrl">https://yuuuh26.github.io/sorosoro/</code><button class="copy-button" data-copy="app" type="button">コピー</button></div><div class="url-block"><span>GitHubリポジトリURL</span><code id="repoUrl">https://github.com/yuuuh26/sorosoro</code><button class="copy-button" data-copy="repo" type="button">コピー</button></div></section>
-          <section class="about-card"><img src="./assets/icon-192.png" width="64" height="64" alt=""><div><h2>Soro Soro</h2><p>v1.1.0</p><p>Made by YUU</p></div></section>
+          <section class="about-card"><img src="./assets/icon-192.png" width="64" height="64" alt=""><div><h2>Soro Soro</h2><p>v1.1.1</p><p>Made by YUU</p></div></section>
         </div>
       </section>
     </main>
@@ -57,6 +54,7 @@
       <button class="nav-button" type="button" data-route="long"><span aria-hidden="true">▣</span><small>長期</small></button>
       <button class="nav-button" type="button" data-route="history"><span aria-hidden="true">◷</span><small>履歴</small></button>
       <button class="nav-button" type="button" data-route="settings"><span aria-hidden="true">⚙</span><small>設定</small></button>
+      <button class="privacy-nav-button" id="privacyBottomToggle" type="button" aria-label="プライベート項目を表示" aria-pressed="false"><span id="privacyNavIcon" aria-hidden="true">🔒</span><small id="privacyNavLabel">非表示</small></button>
     </nav>
   </div>
 
@@ -65,7 +63,6 @@
       <div class="modal-header"><div><p class="section-kicker">ITEM</p><h2 id="itemFormTitle">項目を追加</h2></div><button class="close-button" type="button" data-close="itemDialog" aria-label="閉じる">×</button></div>
       <input type="hidden" id="itemId">
       <div class="form-grid">
-        <label class="field icon-field"><span>絵文字</span><input id="itemIcon" maxlength="4" value="🫖" aria-label="アイコンまたは絵文字"></label>
         <label class="field name-field"><span>項目名 <em>必須</em></span><input id="itemName" required maxlength="40" placeholder="お茶ポット洗浄"></label>
         <fieldset class="field cycle-field"><legend>周期 <em>必須</em></legend><div class="inline-fields"><input id="intervalValue" type="number" min="1" max="999" value="7" required aria-label="周期の数値"><select id="intervalUnit" aria-label="周期の単位"><option value="day">日ごと</option><option value="week">週ごと</option><option value="month">か月ごと</option></select></div></fieldset>
         <label class="field"><span>前回実施日 <em>必須</em></span><input id="lastCompletedDate" type="date" required></label>
