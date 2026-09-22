@@ -436,7 +436,7 @@ async function copyText(text) {
 
 function bindEvents() {
   const homeNav = $('.nav-button[data-route="home"]');
-  $('.nav-button').filter((button) => button.dataset.route !== 'home').forEach((button) => button.addEventListener('click', () => switchRoute(button.dataset.route)));
+  $$('.nav-button').filter((button) => button.dataset.route !== 'home').forEach((button) => button.addEventListener('click', () => switchRoute(button.dataset.route)));
 
   let homePressTimer = null;
   let homeLongPressTriggered = false;
