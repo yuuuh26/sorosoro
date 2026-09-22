@@ -119,8 +119,8 @@ function renderAll() { renderSummary(); renderLists(); renderHistory(); renderPa
 function switchRoute(route) {
   state.route = route;
   const titles = { home: 'Soro Soro', short: '短期', long: '長期', history: '履歴', settings: '設定' };
-  $('.view').forEach((view) => view.classList.toggle('active', view.dataset.view === route));
-  $('.nav-button').forEach((button) => button.classList.toggle('active', button.dataset.route === route));
+  document.querySelectorAll('.view').forEach((view) => view.classList.toggle('active', view.dataset.view === route));
+  document.querySelectorAll('.nav-button').forEach((button) => button.classList.toggle('active', button.dataset.route === route));
   $('#pageTitle').textContent = titles[route];
   $('#pageTitle').classList.toggle('brand-title', route === 'home');
   window.scrollTo({ top: 0, behavior: 'smooth' });
