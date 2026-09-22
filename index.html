@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#087f7a">
+  <meta name="description" content="最後にやった日から、次の『そろそろ』を知らせる周期管理アプリ">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <title>そろそろ</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="./assets/icon-192.png">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div><p class="eyebrow" id="todayLabel"></p><h1 id="pageTitle">そろそろ</h1></div>
+      <button class="icon-button" id="quickAdd" type="button" aria-label="項目を追加"><span aria-hidden="true">＋</span></button>
+    </header>
+
+    <main id="mainContent" tabindex="-1">
+      <section class="view active" id="homeView" data-view="home" aria-labelledby="pageTitle">
+        <div class="summary-grid" id="summaryGrid" aria-label="現在の状況"></div>
+        <div class="section-heading"><div><p class="section-kicker">優先順</p><h2>今、気にしたいこと</h2></div><span class="count-badge" id="homeCount">0件</span></div>
+        <div class="item-list" id="homeList"></div>
+      </section>
+      <section class="view" id="shortView" data-view="short" aria-labelledby="pageTitle">
+        <div class="section-heading compact-heading"><div><p class="section-kicker">SHORT CYCLE</p><h2>短期の項目</h2></div><span class="count-badge" id="shortCount">0件</span></div>
+        <div class="item-list" id="shortList"></div>
+      </section>
+      <section class="view" id="longView" data-view="long" aria-labelledby="pageTitle">
+        <div class="section-heading compact-heading"><div><p class="section-kicker">LONG CYCLE</p><h2>長期の項目</h2></div><span class="count-badge" id="longCount">0件</span></div>
+        <div class="item-list" id="longList"></div>
+      </section>
+      <section class="view" id="historyView" data-view="history" aria-labelledby="pageTitle">
+        <div class="history-toolbar"><label for="historyFilter">表示する項目</label><select id="historyFilter"><option value="all">すべて</option></select></div>
+        <div id="historyList" class="history-list"></div>
+      </section>
+      <section class="view" id="settingsView" data-view="settings" aria-labelledby="pageTitle">
+        <div class="settings-stack">
+          <section class="settings-card"><h2>データ</h2><div class="setting-row"><span>端末保存</span><strong id="dbStatus">確認中</strong></div><div class="setting-row"><span>永続ストレージ</span><strong id="persistStatus">確認中</strong></div><button class="secondary-button full" id="requestPersist" type="button">永続化を申請</button></section>
+          <section class="settings-card"><h2>停止中の項目</h2><div id="pausedList" class="paused-list"></div></section>
+          <section class="settings-card"><h2>URL</h2><div class="url-block"><span>アプリURL</span><code id="appUrl">https://yuuuh26.github.io/sorosoro/</code><button class="copy-button" data-copy="app" type="button">コピー</button></div><div class="url-block"><span>GitHubリポジトリURL</span><code id="repoUrl">https://github.com/yuuuh26/sorosoro</code><button class="copy-button" data-copy="repo" type="button">コピー</button></div></section>
+          <section class="about-card"><img src="./assets/icon-192.png" width="64" height="64" alt=""><div><h2>そろそろ</h2><p>v1.0.0</p><p>Made by YUU</p></div></section>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="メインメニュー">
+      <button class="nav-button active" type="button" data-route="home"><span aria-hidden="true">⌂</span><small>ホーム</small></button>
+      <button class="nav-button" type="button" data-route="short"><span aria-hidden="true">↻</span><small>短期</small></button>
+      <button class="nav-button" type="button" data-route="long"><span aria-hidden="true">▣</span><small>長期</small></button>
+      <button class="nav-button" type="button" data-route="history"><span aria-hidden="true">◷</span><small>履歴</small></button>
+      <button class="nav-button" type="button" data-route="settings"><span aria-hidden="true">⚙</span><small>設定</small></button>
+    </nav>
+  </div>
+
+  <dialog id="itemDialog" class="modal">
+    <form id="itemForm" method="dialog" novalidate>
+      <div class="modal-header"><div><p class="section-kicker">ITEM</p><h2 id="itemFormTitle">項目を追加</h2></div><button class="close-button" type="button" data-close="itemDialog" aria-label="閉じる">×</button></div>
+      <input type="hidden" id="itemId">
+      <div class="form-grid">
+        <label class="field icon-field"><span>絵文字</span><input id="itemIcon" maxlength="4" value="🫖" aria-label="アイコンまたは絵文字"></label>
+        <label class="field name-field"><span>項目名 <em>必須</em></span><input id="itemName" required maxlength="40" placeholder="お茶ポット洗浄"></label>
+        <label class="field"><span>カテゴリー</span><select id="itemCategory"><option>🏠 家事</option><option>🧹 掃除</option><option>💊 健康</option><option>✂️ 身だしなみ</option><option>🛠 メンテナンス</option><option>📦 補充</option><option>⭐ その他</option></select></label>
+        <fieldset class="field cycle-field"><legend>周期 <em>必須</em></legend><div class="inline-fields"><input id="intervalValue" type="number" min="1" max="999" value="7" required aria-label="周期の数値"><select id="intervalUnit" aria-label="周期の単位"><option value="day">日ごと</option><option value="week">週ごと</option><option value="month">か月ごと</option></select></div></fieldset>
+        <label class="field"><span>前回実施日 <em>必須</em></span><input id="lastCompletedDate" type="date" required></label>
+        <label class="field"><span>表示場所</span><select id="itemTab"><option value="short">短期</option><option value="long">長期</option></select></label>
+        <label class="field"><span>ホーム浮上</span><div class="suffix-input"><input id="riseDays" type="number" min="0" max="365" value="3"><span>日前から</span></div></label>
+        <label class="switch-field"><span><strong>ホームへ常時表示</strong><small>期限前でもホームに表示</small></span><input id="pinHome" type="checkbox" role="switch"></label>
+        <label class="field full-width"><span>メモ</span><textarea id="itemNote" maxlength="300" rows="3" placeholder="交換場所や手順など"></textarea></label>
+      </div>
+      <p class="form-error" id="formError" role="alert"></p>
+      <div class="modal-actions"><button class="secondary-button" type="button" data-close="itemDialog">キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
+    </form>
+  </dialog>
+  <dialog id="detailDialog" class="modal detail-modal"><div id="detailContent"></div></dialog>
+  <dialog id="dateDialog" class="modal small-modal"><form id="dateForm" method="dialog"><div class="modal-header"><div><p class="section-kicker">COMPLETE</p><h2>実施日を指定</h2></div><button class="close-button" type="button" data-close="dateDialog" aria-label="閉じる">×</button></div><input type="hidden" id="dateItemId"><label class="field"><span>実施日</span><input type="date" id="specifiedDate" required></label><div class="modal-actions"><button class="secondary-button" type="button" data-close="dateDialog">キャンセル</button><button class="primary-button" type="submit">完了にする</button></div></form></dialog>
+  <dialog id="historyEditDialog" class="modal small-modal"><form id="historyEditForm" method="dialog"><div class="modal-header"><div><p class="section-kicker">HISTORY</p><h2>実施日を修正</h2></div><button class="close-button" type="button" data-close="historyEditDialog" aria-label="閉じる">×</button></div><input type="hidden" id="historyEditId"><label class="field"><span>実施日</span><input type="date" id="historyEditDate" required></label><div class="modal-actions split-actions"><button class="danger-button" id="deleteHistory" type="button">履歴を削除</button><div><button class="secondary-button" type="button" data-close="historyEditDialog">戻る</button><button class="primary-button" type="submit">更新</button></div></div></form></dialog>
+  <dialog id="confirmDialog" class="confirm-dialog"><form method="dialog"><h2 id="confirmTitle">確認</h2><p id="confirmMessage"></p><div class="modal-actions"><button value="cancel" class="secondary-button">キャンセル</button><button value="confirm" class="danger-solid">削除する</button></div></form></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"><div><strong id="toastTitle"></strong><span id="toastMessage"></span></div><button id="toastAction" type="button" hidden>取り消す</button></div>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
