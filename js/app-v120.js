@@ -1,6 +1,6 @@
 'use strict';
 
-// Soro Soro v1.2.0 — clean single-file runtime built from the known-good v1.0.0 base.
+// Soro Soro v1.2.3 — clean single-file runtime built from the known-good v1.0.0 base.
 const DB_NAME = 'sorosoro-db';
 const DB_VERSION = 1;
 const STORES = { items: 'items', history: 'history', settings: 'settings' };
@@ -428,43 +428,41 @@ async function copyText(text) {
 }
 
 function bindEvents() {
-  const homeNav = $('.nav-button[data-route="home"]');
-  $$('.nav-button').filter((button) => button.dataset.route !== 'home').forEach((button) => button.addEventListener('click', () => switchRoute(button.dataset.route)));
+  const settingsNav = $('.nav-button[data-route="settings"]');
+  $$('.nav-button').filter((button) => button.dataset.route !== 'settings').forEach((button) => button.addEventListener('click', () => switchRoute(button.dataset.route)));
 
-  let homePressTimer = null;
-  let homeLongPressTriggered = false;
-  if (homeNav) {
-    homeNav.addEventListener('pointerdown', (event) => {
-      homeLongPressTriggered = false;
-      clearTimeout(homePressTimer);
-      try { homeNav.setPointerCapture?.(event.pointerId); } catch {}
-      homePressTimer = setTimeout(() => {
-        homeLongPressTriggered = true;
+  let settingsPressTimer = null;
+  let settingsLongPressTriggered = false;
+  if (settingsNav) {
+    settingsNav.addEventListener('pointerdown', (event) => {
+      settingsLongPressTriggered = false;
+      clearTimeout(settingsPressTimer);
+      try { settingsNav.setPointerCapture?.(event.pointerId); } catch {}
+      settingsPressTimer = setTimeout(() => {
+        settingsLongPressTriggered = true;
         navigator.vibrate?.(35);
         togglePrivacyMode();
-        switchRoute('home');
-      }, 1200);
+      }, 1000);
     });
-    const cancelHomePress = (event) => {
-      clearTimeout(homePressTimer);
-      homePressTimer = null;
+    const cancelSettingsPress = (event) => {
+      clearTimeout(settingsPressTimer);
+      settingsPressTimer = null;
       try {
-        if (event?.pointerId != null && homeNav.hasPointerCapture?.(event.pointerId)) homeNav.releasePointerCapture?.(event.pointerId);
+        if (event?.pointerId != null && settingsNav.hasPointerCapture?.(event.pointerId)) settingsNav.releasePointerCapture?.(event.pointerId);
       } catch {}
     };
-    homeNav.addEventListener('pointerup', cancelHomePress);
-    homeNav.addEventListener('pointercancel', cancelHomePress);
-    homeNav.addEventListener('contextmenu', (event) => event.preventDefault());
-    homeNav.addEventListener('click', (event) => {
-      if (homeLongPressTriggered) {
+    settingsNav.addEventListener('pointerup', cancelSettingsPress);
+    settingsNav.addEventListener('pointercancel', cancelSettingsPress);
+    settingsNav.addEventListener('contextmenu', (event) => event.preventDefault());
+    settingsNav.addEventListener('click', (event) => {
+      if (settingsLongPressTriggered) {
         event.preventDefault();
-        homeLongPressTriggered = false;
+        settingsLongPressTriggered = false;
         return;
       }
-      switchRoute('home');
+      switchRoute('settings');
     });
   }
-
   $('#quickAdd').addEventListener('click', () => openItemForm());
   $('#privacySettingsToggle').addEventListener('click', togglePrivacyMode);
   $('#itemForm').addEventListener('submit', saveItem);
