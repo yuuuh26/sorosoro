@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sorosoro-v1.1.2';
+const CACHE_NAME = 'sorosoro-v1.1.3';
 const APP_SHELL = [
   './', './index.html', './styles.css', './manifest.webmanifest',
   './js/app.js', './js/db.js', './js/date.js',
