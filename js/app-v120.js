@@ -184,7 +184,7 @@ function sortedItems(items) {
 }
 
 function homeItems() {
-  return sortedItems(activeItems().filter((item) => item.pinHome || getDueState(item).diff <= Number(item.riseDays || 0)));
+  return sortedItems(activeItems());
 }
 
 function renderSummary() {
