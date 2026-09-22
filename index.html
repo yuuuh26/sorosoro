@@ -10,12 +10,12 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="192x192" href="./assets/icon-192.png">
   <link rel="apple-touch-icon" href="./assets/icon-192.png">
-  <link rel="stylesheet" href="./styles-v120.css?v=1.2.2">
+  <link rel="stylesheet" href="./styles-v130.css?v=1.3.0">
 </head>
 <body>
   <div class="app-shell">
     <header class="app-header">
-      <div><p class="eyebrow"><span id="todayLabel"></span><span class="build-version">v1.2.4</span></p><h1 id="pageTitle" class="brand-title">Soro Soro</h1></div>
+      <div><p class="eyebrow"><span id="todayLabel"></span><span class="build-version">v1.3.0</span></p><h1 id="pageTitle" class="brand-title">Soro Soro</h1></div>
       <button class="icon-button" id="quickAdd" type="button" aria-label="項目を追加"><span aria-hidden="true">＋</span></button>
     </header>
 
@@ -35,7 +35,7 @@
           <section class="settings-card"><h2>データ</h2><div class="setting-row"><span>端末保存</span><strong id="dbStatus">確認中</strong></div><div class="setting-row"><span>永続ストレージ</span><strong id="persistStatus">確認中</strong></div><button class="secondary-button full" id="requestPersist" type="button">永続化を申請</button></section>
           <section class="settings-card"><h2>停止中の項目</h2><div id="pausedList" class="paused-list"></div></section>
           <section class="settings-card"><h2>URL</h2><div class="url-block"><span>アプリURL</span><code id="appUrl">https://yuuuh26.github.io/sorosoro/</code><button class="copy-button" data-copy="app" type="button">コピー</button></div><div class="url-block"><span>GitHubリポジトリURL</span><code id="repoUrl">https://github.com/yuuuh26/sorosoro</code><button class="copy-button" data-copy="repo" type="button">コピー</button></div></section>
-          <section class="about-card"><img src="./assets/icon-192.png" width="64" height="64" alt=""><div><h2>Soro Soro</h2><p>v1.2.4</p><p>Made by YUU</p></div></section>
+          <section class="about-card"><img src="./assets/icon-192.png" width="64" height="64" alt=""><div><h2>Soro Soro</h2><p>v1.3.0</p><p>Made by YUU</p></div></section>
         </div>
       </section>
     </main>
@@ -55,8 +55,9 @@
         <label class="field name-field"><span>項目名 <em>必須</em></span><input id="itemName" required maxlength="40" placeholder="お茶ポット洗浄"></label>
         <fieldset class="field cycle-field"><legend>周期 <em>必須</em></legend><div class="inline-fields"><input id="intervalValue" type="number" min="1" max="999" value="7" required aria-label="周期の数値"><select id="intervalUnit" aria-label="周期の単位"><option value="day">日ごと</option><option value="week">週ごと</option><option value="month">か月ごと</option></select></div></fieldset>
         <label class="field"><span>前回実施日 <em>必須</em></span><input id="lastCompletedDate" type="date" required></label>
-        <label class="field"><span>ホーム浮上</span><div class="suffix-input"><input id="riseDays" type="number" min="0" max="365" value="3"><span>日前から</span></div></label>
-        <label class="switch-field"><span><strong>ホームへ常時表示</strong><small>期限前でもホームに表示</small></span><input id="pinHome" type="checkbox" role="switch"></label>
+        <label class="field"><span>次回の予定日 <small>任意</small></span><input id="plannedDate" type="date"><small class="field-hint">予約済みの日。登録すると、その次の目安も表示します。</small></label>
+        <label class="switch-field attention-switch"><span><strong>期限が近づいたら優先表示</strong><small>OFFなら一覧下部で、目安日との差だけを表示</small></span><input id="riseEnabled" type="checkbox" role="switch" checked></label>
+        <label class="field" id="riseDaysField"><span>優先表示の開始</span><div class="suffix-input"><input id="riseDays" type="number" min="0" max="365" value="3"><span>日前から</span></div></label>
         <label class="switch-field privacy-switch"><span><strong>プライベート項目</strong><small>通常時は一覧・履歴から隠す</small></span><input id="itemPrivate" type="checkbox" role="switch"></label>
         <label class="field full-width"><span>メモ</span><textarea id="itemNote" maxlength="300" rows="3" placeholder="交換場所や手順など"></textarea></label>
       </div>
@@ -84,6 +85,6 @@
       }
     })();
   </script>
-  <script defer src="./js/app-v124.js"></script>
+  <script defer src="./js/app-v130.js"></script>
 </body>
 </html>
