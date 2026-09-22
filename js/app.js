@@ -95,18 +95,16 @@ function renderPaused() {
 }
 
 function renderPrivacyControls() {
-  const privateCount = state.items.filter((item) => item.private === true).length;
   const toggle = $('#privacyBottomToggle');
+  if (!toggle) return;
   toggle.classList.toggle('active', state.privacyVisible);
   toggle.setAttribute('aria-pressed', String(state.privacyVisible));
   toggle.setAttribute('aria-label', state.privacyVisible ? 'プライベート項目を隠す' : 'プライベート項目を表示');
-  $('#privacyNavIcon').textContent = state.privacyVisible ? '👁' : '🔒';
-  $('#privacyNavLabel').textContent = state.privacyVisible ? '表示中' : '非表示';
-  $('#privacyState').textContent = state.privacyVisible ? `表示中 ${privateCount}件` : `非表示 ${privateCount}件`;
-  $('#privacyState').classList.toggle('active', state.privacyVisible);
-  $('#privacySettingsToggle').textContent = state.privacyVisible ? 'プライベート項目を隠す' : 'プライベート項目を表示';
+  const icon = $('#privacyNavIcon');
+  const label = $('#privacyNavLabel');
+  if (icon) icon.textContent = state.privacyVisible ? '👁' : '🔒';
+  if (label) label.textContent = state.privacyVisible ? '表示' : '隠す';
 }
-
 function togglePrivacyMode() {
   state.privacyVisible = !state.privacyVisible;
   if (!state.privacyVisible && $('#detailDialog').open) $('#detailDialog').close();
@@ -288,13 +286,12 @@ async function copyText(text) {
 
 function bindEvents() {
   $$('.nav-button').forEach((button) => button.addEventListener('click', () => switchRoute(button.dataset.route)));
-  $('#quickAdd').addEventListener('click', () => openItemForm());
-  $('#privacyBottomToggle').addEventListener('click', togglePrivacyMode);
-  $('#privacySettingsToggle').addEventListener('click', togglePrivacyMode);
-  $('#itemForm').addEventListener('submit', saveItem);
-  $('#historyFilter').addEventListener('change', renderHistory);
-  $('#toastAction').addEventListener('click', undoCompletion);
-  $('#requestPersist').addEventListener('click', () => requestPersistentStorage(true));
+  $('#quickAdd')?.addEventListener('click', () => openItemForm());
+  $('#privacyBottomToggle')?.addEventListener('click', togglePrivacyMode);
+  $('#itemForm')?.addEventListener('submit', saveItem);
+  $('#historyFilter')?.addEventListener('change', renderHistory);
+  $('#toastAction')?.addEventListener('click', undoCompletion);
+  $('#requestPersist')?.addEventListener('click', () => requestPersistentStorage(true));
   $('#dateForm').addEventListener('submit', async (event) => { event.preventDefault(); const id = $('#dateItemId').value; const date = $('#specifiedDate').value; if (!date) return; $('#dateDialog').close(); await completeItem(id, date); });
   $('#historyEditForm').addEventListener('submit', async (event) => {
     event.preventDefault(); const entry = state.history.find((item) => item.id === $('#historyEditId').value); if (!entry) return;
@@ -315,16 +312,22 @@ function bindEvents() {
 }
 
 async function initialize() {
-  $('#todayLabel').textContent = new Intl.DateTimeFormat('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' }).format(new Date());
-  $('#appUrl').textContent = APP_URL; $('#repoUrl').textContent = REPO_URL;
+  const todayLabel = $('#todayLabel');
+  if (todayLabel) todayLabel.textContent = new Intl.DateTimeFormat('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' }).format(new Date());
+  if ($('#appUrl')) $('#appUrl').textContent = APP_URL;
+  if ($('#repoUrl')) $('#repoUrl').textContent = REPO_URL;
   bindEvents();
   try {
     await openDatabase();
     await putOne(STORES.settings, { key: 'schemaVersion', value: DB_VERSION, updatedAt: new Date().toISOString() });
-    $('#dbStatus').textContent = '有効';
-    $('#persistStatus').textContent = navigator.storage?.persisted && await navigator.storage.persisted() ? '有効' : navigator.storage?.persisted ? '未適用' : '未対応';
+    if ($('#dbStatus')) $('#dbStatus').textContent = '有効';
+    if ($('#persistStatus')) $('#persistStatus').textContent = navigator.storage?.persisted && await navigator.storage.persisted() ? '有効' : navigator.storage?.persisted ? '未適用' : '未対応';
     await refreshData();
-  } catch (error) { $('#dbStatus').textContent = '利用不可'; showToast('保存機能を使用できません', 'ブラウザ設定を確認してください'); console.error(error); }
+  } catch (error) {
+    if ($('#dbStatus')) $('#dbStatus').textContent = '利用不可';
+    showToast('保存機能を使用できません', 'ブラウザ設定を確認してください');
+    console.error(error);
+  }
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(console.error);
 }
 
