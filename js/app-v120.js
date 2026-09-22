@@ -205,15 +205,9 @@ function emptyState(kind) {
 }
 
 function renderLists() {
-  const groups = {
-    home: homeItems(),
-    short: sortedItems(activeItems().filter((item) => item.tab === 'short')),
-    long: sortedItems(activeItems().filter((item) => item.tab === 'long')),
-  };
-  Object.entries(groups).forEach(([key, items]) => {
-    $(`#${key}List`).innerHTML = items.length ? items.map(itemCard).join('') : emptyState(key);
-    $(`#${key}Count`).textContent = `${items.length}件`;
-  });
+  const items = homeItems();
+  $('#homeList').innerHTML = items.length ? items.map(itemCard).join('') : emptyState('home');
+  $('#homeCount').textContent = `${items.length}件`;
 }
 
 function renderHistoryFilter() {
