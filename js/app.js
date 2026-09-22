@@ -96,12 +96,12 @@ function renderPaused() {
 
 function renderPrivacyControls() {
   const privateCount = state.items.filter((item) => item.private === true).length;
-  const toggle = $('#privacyToggle');
+  const toggle = $('#privacyBottomToggle');
   toggle.classList.toggle('active', state.privacyVisible);
   toggle.setAttribute('aria-pressed', String(state.privacyVisible));
   toggle.setAttribute('aria-label', state.privacyVisible ? 'プライベート項目を隠す' : 'プライベート項目を表示');
-  $('#privacyIcon').textContent = state.privacyVisible ? '👁' : '🔒';
-  $('#privacyLabel').textContent = state.privacyVisible ? 'OPEN' : 'PRIVATE';
+  $('#privacyNavIcon').textContent = state.privacyVisible ? '👁' : '🔒';
+  $('#privacyNavLabel').textContent = state.privacyVisible ? '表示中' : '非表示';
   $('#privacyState').textContent = state.privacyVisible ? `表示中 ${privateCount}件` : `非表示 ${privateCount}件`;
   $('#privacyState').classList.toggle('active', state.privacyVisible);
   $('#privacySettingsToggle').textContent = state.privacyVisible ? 'プライベート項目を隠す' : 'プライベート項目を表示';
@@ -131,7 +131,6 @@ function openItemForm(item = null) {
   $('#itemForm').reset();
   $('#itemFormTitle').textContent = item ? '項目を編集' : '項目を追加';
   $('#itemId').value = item?.id || '';
-  $('#itemIcon').value = item?.icon || '🫖';
   $('#itemName').value = item?.name || '';
   $('#intervalValue').value = item?.intervalValue || 7;
   $('#intervalUnit').value = item?.intervalUnit || 'day';
@@ -158,7 +157,7 @@ async function saveItem(event) {
   }
   const now = new Date().toISOString();
   const item = {
-    id: oldItem?.id || uid('item'), name, icon: $('#itemIcon').value.trim() || '✓',
+    id: oldItem?.id || uid('item'), name, icon: oldItem?.icon || '✓',
     intervalValue, intervalUnit: $('#intervalUnit').value, lastCompletedDate,
     nextDueDate: addInterval(lastCompletedDate, intervalValue, $('#intervalUnit').value), tab: $('#itemTab').value,
     pinHome: $('#pinHome').checked, riseDays: Math.max(0, Number($('#riseDays').value) || 0), note: $('#itemNote').value.trim(),
@@ -290,7 +289,7 @@ async function copyText(text) {
 function bindEvents() {
   $$('.nav-button').forEach((button) => button.addEventListener('click', () => switchRoute(button.dataset.route)));
   $('#quickAdd').addEventListener('click', () => openItemForm());
-  $('#privacyToggle').addEventListener('click', togglePrivacyMode);
+  $('#privacyBottomToggle').addEventListener('click', togglePrivacyMode);
   $('#privacySettingsToggle').addEventListener('click', togglePrivacyMode);
   $('#itemForm').addEventListener('submit', saveItem);
   $('#historyFilter').addEventListener('change', renderHistory);
