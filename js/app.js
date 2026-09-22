@@ -95,15 +95,14 @@ function renderPaused() {
 }
 
 function renderPrivacyControls() {
-  const toggle = $('#privacyBottomToggle');
-  if (!toggle) return;
-  toggle.classList.toggle('active', state.privacyVisible);
-  toggle.setAttribute('aria-pressed', String(state.privacyVisible));
-  toggle.setAttribute('aria-label', state.privacyVisible ? 'プライベート項目を隠す' : 'プライベート項目を表示');
-  const icon = $('#privacyNavIcon');
-  const label = $('#privacyNavLabel');
-  if (icon) icon.textContent = state.privacyVisible ? '👁' : '🔒';
-  if (label) label.textContent = state.privacyVisible ? '表示' : '隠す';
+  const toggle = $('#privacySettingsToggle');
+  const status = $('#privacyState');
+  if (toggle) {
+    toggle.textContent = state.privacyVisible ? '隠す' : '表示する';
+    toggle.classList.toggle('active', state.privacyVisible);
+    toggle.setAttribute('aria-pressed', String(state.privacyVisible));
+  }
+  if (status) status.textContent = state.privacyVisible ? '現在：表示中' : '現在：非表示';
 }
 function togglePrivacyMode() {
   state.privacyVisible = !state.privacyVisible;
@@ -285,9 +284,40 @@ async function copyText(text) {
 }
 
 function bindEvents() {
-  $$('.nav-button').forEach((button) => button.addEventListener('click', () => switchRoute(button.dataset.route)));
+  const homeNav = $('.nav-button[data-route="home"]');
+  $('.nav-button').filter((button) => button.dataset.route !== 'home').forEach((button) => {
+    button.addEventListener('click', () => switchRoute(button.dataset.route));
+  });
+
+  let homePressTimer = null;
+  let homeLongPressTriggered = false;
+  if (homeNav) {
+    homeNav.addEventListener('pointerdown', () => {
+      homeLongPressTriggered = false;
+      clearTimeout(homePressTimer);
+      homePressTimer = setTimeout(() => {
+        homeLongPressTriggered = true;
+        navigator.vibrate?.(35);
+        togglePrivacyMode();
+        switchRoute('home');
+      }, 1200);
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((eventName) => {
+      homeNav.addEventListener(eventName, () => clearTimeout(homePressTimer));
+    });
+    homeNav.addEventListener('contextmenu', (event) => event.preventDefault());
+    homeNav.addEventListener('click', (event) => {
+      if (homeLongPressTriggered) {
+        event.preventDefault();
+        homeLongPressTriggered = false;
+        return;
+      }
+      switchRoute('home');
+    });
+  }
+
   $('#quickAdd')?.addEventListener('click', () => openItemForm());
-  $('#privacyBottomToggle')?.addEventListener('click', togglePrivacyMode);
+  $('#privacySettingsToggle')?.addEventListener('click', togglePrivacyMode);
   $('#itemForm')?.addEventListener('submit', saveItem);
   $('#historyFilter')?.addEventListener('change', renderHistory);
   $('#toastAction')?.addEventListener('click', undoCompletion);
