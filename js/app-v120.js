@@ -201,7 +201,7 @@ function itemCard(item) {
 
 function emptyState(kind) {
   const home = kind === 'home';
-  return `<div class="empty-state"><span class="empty-icon" aria-hidden="true">${home ? '◎' : '○'}</span><h3>${home ? '今は落ち着いています' : '項目はまだありません'}</h3><p>${home ? '期限が近づいた項目や、ホーム常駐の項目がここに表示されます。' : '右上の＋から、このタブで管理したい項目を追加できます。'}</p><button class="primary-button" type="button" data-action="add">最初の項目を追加</button></div>`;
+  return `<div class="empty-state"><span class="empty-icon" aria-hidden="true">${home ? '◎' : '○'}</span><h3>項目はまだありません</h3><p>${home ? '右上の＋から、周期管理したい項目を追加できます。' : '右上の＋から項目を追加できます。'}</p><button class="primary-button" type="button" data-action="add">最初の項目を追加</button></div>`;
 }
 
 function renderLists() {
@@ -261,7 +261,7 @@ function renderAll() { renderSummary(); renderLists(); renderHistory(); renderPa
 
 function switchRoute(route) {
   state.route = route;
-  const titles = { home: 'Soro Soro', short: '短期', long: '長期', history: '履歴', settings: '設定' };
+  const titles = { home: 'Soro Soro', history: '履歴', settings: '設定' };
   $$('.view').forEach((view) => view.classList.toggle('active', view.dataset.view === route));
   $$('.nav-button').forEach((button) => button.classList.toggle('active', button.dataset.route === route));
   $('#pageTitle').textContent = titles[route];
@@ -359,7 +359,7 @@ function openDetail(itemId) {
   if (!item) return;
   const due = getDueState(item);
   const count = state.history.filter((entry) => entry.itemId === item.id).length;
-  $('#detailContent').innerHTML = `<div class="modal-header"><div class="detail-hero"><div class="item-emoji">${escapeHtml(item.icon)}</div><div><span class="detail-status">${due.label}</span><h2>${escapeHtml(item.name)}</h2></div></div><button class="close-button" type="button" data-close="detailDialog" aria-label="閉じる">×</button></div><div class="detail-grid"><div class="detail-stat"><span>前回</span><strong>${formatDate(item.lastCompletedDate, true)}</strong></div><div class="detail-stat"><span>次回予定</span><strong>${formatDate(item.nextDueDate, true)}</strong></div><div class="detail-stat"><span>周期</span><strong>${intervalLabel(item)}</strong></div><div class="detail-stat"><span>ホーム浮上</span><strong>${item.pinHome ? '常時表示' : `${item.riseDays}日前`}</strong></div><div class="detail-stat"><span>分類</span><strong>${item.tab === 'short' ? '短期' : '長期'}</strong></div><div class="detail-stat"><span>履歴</span><strong>${count}件</strong></div></div>${item.note ? `<div class="note-box">${escapeHtml(item.note)}</div>` : ''}<div class="detail-actions"><button class="done-button" type="button" data-action="done" data-id="${item.id}">今日やった ✓</button><button class="secondary-button" type="button" data-action="done-date" data-id="${item.id}">日付を指定</button><button class="secondary-button" type="button" data-action="edit" data-id="${item.id}">編集</button><button class="secondary-button" type="button" data-action="item-history" data-id="${item.id}">履歴を見る</button><button class="secondary-button" type="button" data-action="pause" data-id="${item.id}">一時停止</button><button class="danger-button" type="button" data-action="delete-item" data-id="${item.id}">削除</button></div>`;
+  $('#detailContent').innerHTML = `<div class="modal-header"><div class="detail-hero"><div class="item-emoji">${escapeHtml(item.icon)}</div><div><span class="detail-status">${due.label}</span><h2>${escapeHtml(item.name)}</h2></div></div><button class="close-button" type="button" data-close="detailDialog" aria-label="閉じる">×</button></div><div class="detail-grid"><div class="detail-stat"><span>前回</span><strong>${formatDate(item.lastCompletedDate, true)}</strong></div><div class="detail-stat"><span>次回予定</span><strong>${formatDate(item.nextDueDate, true)}</strong></div><div class="detail-stat"><span>周期</span><strong>${intervalLabel(item)}</strong></div><div class="detail-stat"><span>ホーム浮上</span><strong>${item.pinHome ? '常時表示' : `${item.riseDays}日前`}</strong></div><div class="detail-stat"><span>履歴</span><strong>${count}件</strong></div></div>${item.note ? `<div class="note-box">${escapeHtml(item.note)}</div>` : ''}<div class="detail-actions"><button class="done-button" type="button" data-action="done" data-id="${item.id}">今日やった ✓</button><button class="secondary-button" type="button" data-action="done-date" data-id="${item.id}">日付を指定</button><button class="secondary-button" type="button" data-action="edit" data-id="${item.id}">編集</button><button class="secondary-button" type="button" data-action="item-history" data-id="${item.id}">履歴を見る</button><button class="secondary-button" type="button" data-action="pause" data-id="${item.id}">一時停止</button><button class="danger-button" type="button" data-action="delete-item" data-id="${item.id}">削除</button></div>`;
   $('#detailDialog').showModal();
 }
 
