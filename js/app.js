@@ -1,5 +1,5 @@
-import { STORES, DB_VERSION, openDatabase, getAll, getOne, putOne, deleteOne, saveItemWithHistory, deleteItemAndHistory, getHistoryForItem } from './db.js';
-import { toDateKey, addInterval, formatDate, formatLongDate, getDueState, intervalLabel } from './date.js';
+import { STORES, DB_VERSION, openDatabase, getAll, getOne, putOne, deleteOne, saveItemWithHistory, deleteItemAndHistory, getHistoryForItem } from './db.js?v=1.1.4';
+import { toDateKey, addInterval, formatDate, formatLongDate, getDueState, intervalLabel } from './date.js?v=1.1.4';
 
 const APP_URL = 'https://yuuuh26.github.io/sorosoro/';
 const REPO_URL = 'https://github.com/yuuuh26/sorosoro';
@@ -292,9 +292,10 @@ function bindEvents() {
   let homePressTimer = null;
   let homeLongPressTriggered = false;
   if (homeNav) {
-    homeNav.addEventListener('pointerdown', () => {
+    homeNav.addEventListener('pointerdown', (event) => {
       homeLongPressTriggered = false;
       clearTimeout(homePressTimer);
+      try { homeNav.setPointerCapture?.(event.pointerId); } catch {}
       homePressTimer = setTimeout(() => {
         homeLongPressTriggered = true;
         navigator.vibrate?.(35);
@@ -302,9 +303,19 @@ function bindEvents() {
         switchRoute('home');
       }, 1200);
     });
-    ['pointerup', 'pointercancel', 'pointerleave'].forEach((eventName) => {
-      homeNav.addEventListener(eventName, () => clearTimeout(homePressTimer));
-    });
+
+    const cancelHomePress = (event) => {
+      clearTimeout(homePressTimer);
+      homePressTimer = null;
+      try {
+        if (event?.pointerId != null && homeNav.hasPointerCapture?.(event.pointerId)) {
+          homeNav.releasePointerCapture?.(event.pointerId);
+        }
+      } catch {}
+    };
+
+    homeNav.addEventListener('pointerup', cancelHomePress);
+    homeNav.addEventListener('pointercancel', cancelHomePress);
     homeNav.addEventListener('contextmenu', (event) => event.preventDefault());
     homeNav.addEventListener('click', (event) => {
       if (homeLongPressTriggered) {
