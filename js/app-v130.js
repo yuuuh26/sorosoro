@@ -1,6 +1,6 @@
 'use strict';
 
-// Soro Soro v1.3.0 — future plans and optional priority surfacing.
+// Soro Soro v1.3.1 — always-visible elapsed days since last completion.
 const DB_NAME = 'sorosoro-db';
 const DB_VERSION = 1;
 const STORES = { items: 'items', history: 'history', settings: 'settings' };
@@ -171,6 +171,14 @@ function intervalLabel(item) {
   return `${item.intervalValue}${{ day: '日', week: '週', month: 'か月' }[item.intervalUnit]}ごと`;
 }
 
+function elapsedSinceLastLabel(item, today = toDateKey()) {
+  if (!item.lastCompletedDate) return '前回からの日数不明';
+  const days = calendarDayDiff(item.lastCompletedDate, today);
+  if (days < 0) return `前回実施日まであと${Math.abs(days)}日`;
+  if (days === 0) return '前回から 0日（今日）';
+  return `前回から ${days}日`;
+}
+
 
 const APP_URL = 'https://yuuuh26.github.io/sorosoro/';
 const REPO_URL = 'https://github.com/yuuuh26/sorosoro';
@@ -219,7 +227,7 @@ function itemCard(item) {
   const scheduleMeta = item.plannedDate
     ? `<span>予約 ${formatDate(item.plannedDate)}</span><span>その次の目安 ${formatDate(followingEstimate(item))}</span>`
     : `<span>目安 ${formatDate(item.nextDueDate)}</span>`;
-  return `<article class="item-card state-${due.key}${item.private === true ? ' is-private' : ''}" data-item-id="${item.id}"><div class="card-top"><div class="item-emoji" aria-hidden="true">${escapeHtml(item.icon || '✓')}</div><div class="card-main"><p class="status-line"><span>${due.label}</span>${referenceBadge}${privateBadge}</p><h3 class="item-name">${escapeHtml(item.name)}</h3><div class="item-meta"><span>前回 ${formatDate(item.lastCompletedDate)}</span>${scheduleMeta}<span>${intervalLabel(item)}</span></div></div></div><div class="card-actions"><button class="done-button" type="button" data-action="done" data-id="${item.id}">やった ✓</button><button class="detail-button" type="button" data-action="detail" data-id="${item.id}">詳細</button></div></article>`;
+  return `<article class="item-card state-${due.key}${item.private === true ? ' is-private' : ''}" data-item-id="${item.id}"><div class="card-top"><div class="item-emoji" aria-hidden="true">${escapeHtml(item.icon || '✓')}</div><div class="card-main"><p class="status-line"><span>${due.label}</span>${referenceBadge}${privateBadge}</p><h3 class="item-name">${escapeHtml(item.name)}</h3><div class="item-meta"><span>前回 ${formatDate(item.lastCompletedDate)}</span><span class="elapsed-since-last">${elapsedSinceLastLabel(item)}</span>${scheduleMeta}<span>${intervalLabel(item)}</span></div></div></div><div class="card-actions"><button class="done-button" type="button" data-action="done" data-id="${item.id}">やった ✓</button><button class="detail-button" type="button" data-action="detail" data-id="${item.id}">詳細</button></div></article>`;
 }
 
 function emptyState(kind) {
