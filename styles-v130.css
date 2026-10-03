@@ -8,3 +8,12 @@
 .modal,.confirm-dialog{overflow-y:auto;-webkit-overflow-scrolling:touch}
 .field-hint{color:var(--muted);font-size:.72rem;line-height:1.55}.attention-switch{padding:13px 12px;border:1px solid #d9e7e5;border-radius:15px;background:#f8fbfa}.field.is-disabled{opacity:.48}.field input:disabled{cursor:not-allowed;background:#edf2f1}.reference-badge{display:inline-flex;align-items:center;padding:2px 6px;border-radius:999px;color:#637b79;background:#e9f0ef;font-size:.58rem;font-weight:900;letter-spacing:.04em}.item-card.state-reference{box-shadow:0 7px 20px rgba(20,78,75,.055)}.item-card.state-reference:before{background:#b9cac8}.state-reference .status-line{color:#627b79}
 @media(min-width:620px){.app-header{padding-inline:26px}main{padding-inline:24px}.item-list{grid-template-columns:1fr 1fr}.history-list,.settings-stack{max-width:600px;margin-inline:auto}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+
+/* Cloud backup settings */
+.cloud-help{font-size:.82rem;line-height:1.7;color:var(--muted,#58706d);margin:12px 0}
+.cloud-status{padding:12px;border-radius:10px;background:#e9f5f2;overflow-wrap:anywhere;font-size:.85rem}
+#cloudCard .setting-row{gap:12px;align-items:start}#cloudCard .setting-row strong{text-align:right;font-size:.8rem;overflow-wrap:anywhere}
+#cloudCard .full{margin-top:10px}.cloud-fields{display:grid;gap:12px;margin-top:14px}.cloud-link{display:block;text-align:center;text-decoration:none;box-sizing:border-box}
+.cloud-history-row,.cloud-device-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:12px 0;border-bottom:1px solid #d9e7e3;font-size:.78rem}.cloud-history-row span,.cloud-device-row span{flex:1;min-width:150px;white-space:pre-line;overflow-wrap:anywhere}
+.cloud-management{margin:18px 0}.cloud-management summary{cursor:pointer;font-weight:700}.cloud-management .field{margin-top:12px}.cloud-import{display:block;text-align:center;cursor:pointer;position:relative;overflow:hidden}.cloud-import input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}#newKey{width:100%;box-sizing:border-box;font-family:monospace}#cloudCard hr{border:0;border-top:1px solid #d9e7e3;margin:20px 0}

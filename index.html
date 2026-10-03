@@ -10,12 +10,12 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="192x192" href="./assets/icon-192.png">
   <link rel="apple-touch-icon" href="./assets/icon-192.png">
-  <link rel="stylesheet" href="./styles-v130.css?v=1.3.0">
+  <link rel="stylesheet" href="./styles-v130.css?v=1.4.0">
 </head>
 <body>
   <div class="app-shell">
     <header class="app-header">
-      <div><p class="eyebrow"><span id="todayLabel"></span><span class="build-version">v1.3.1</span></p><h1 id="pageTitle" class="brand-title">Soro Soro</h1></div>
+      <div><p class="eyebrow"><span id="todayLabel"></span><span class="build-version">v1.4.0</span></p><h1 id="pageTitle" class="brand-title">Soro Soro</h1></div>
       <button class="icon-button" id="quickAdd" type="button" aria-label="項目を追加"><span aria-hidden="true">＋</span></button>
     </header>
 
@@ -33,9 +33,46 @@
         <div class="settings-stack">
           <section class="settings-card privacy-settings-card"><h2>表示</h2><div class="privacy-setting-row"><div><strong>プライベート項目</strong><small>普段は隠して、必要な時だけ表示</small></div><button class="compact-setting-button" id="privacySettingsToggle" type="button" aria-pressed="false">表示する</button></div><div class="privacy-hint"><span id="privacyState">現在：非表示</span><small>設定を1秒長押しでも切替</small></div></section>
           <section class="settings-card"><h2>データ</h2><div class="setting-row"><span>端末保存</span><strong id="dbStatus">確認中</strong></div><div class="setting-row"><span>永続ストレージ</span><strong id="persistStatus">確認中</strong></div><button class="secondary-button full" id="requestPersist" type="button">永続化を申請</button></section>
+          <section class="settings-card" id="cloudCard">
+  <h2>☁️ クラウドバックアップ</h2>
+  <p class="cloud-help">端末へ保存後、変更を約1.5秒まとめて自動保存。最新データは期限なし・履歴5件。複数端末の自動同期は行いません。</p>
+  <p id="cloudStatus" class="cloud-status" role="status" aria-live="polite">確認中</p>
+  <div class="setting-row"><span>接続</span><strong id="cloudConnection">未接続</strong></div>
+  <div class="setting-row"><span>前回のクラウド保存</span><strong id="cloudLastSaved">まだ保存していません</strong></div>
+  <div class="setting-row"><span>未送信の変更</span><strong id="cloudPending">確認中</strong></div>
+  <div id="cloudMigration" hidden>
+    <p class="cloud-help">①下の「全データを書き出す」でJSONを保存 → ②クラウド版を開く → ③復旧キーで接続 → ④同じJSONを読み込む。クラウド保存の成功を確認してから、新しいURLをホーム画面へ追加してください。</p>
+    <a class="primary-button full cloud-link" href="https://sorosoro-backups.dengana-10011212.workers.dev/" target="_blank" rel="noopener">クラウド版を開く ↗</a>
+  </div>
+  <div id="cloudHostedControls" hidden>
+    <div id="cloudLogin" class="cloud-fields">
+      <label class="field"><span>端末名</span><input id="deviceName" maxlength="80" value="この端末" autocomplete="off"></label>
+      <label class="field"><span>復旧キー</span><input id="recoveryKey" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="初回だけ入力"></label>
+      <button class="primary-button full" id="cloudLoginButton" type="button">この端末を接続</button>
+    </div>
+    <button class="secondary-button full" id="cloudLogout" hidden type="button">この端末をログアウト</button>
+    <button class="secondary-button full" id="cloudHistoryButton" type="button">履歴から復元</button>
+    <div id="cloudHistory"></div>
+    <details class="cloud-management"><summary>接続した端末を管理</summary>
+      <p class="cloud-help">管理操作のたびに復旧キーを入力してください。キーは操作後に消去します。</p>
+      <label class="field"><span>管理用の復旧キー</span><input id="managementKey" type="password" autocomplete="off" autocapitalize="none" spellcheck="false"></label>
+      <button class="secondary-button full" id="cloudDevicesButton" type="button">端末一覧を表示</button><div id="cloudDevices"></div>
+      <button class="danger-button full" id="cloudRevokeAll" type="button">全端末の認証を取り消す</button>
+      <button class="danger-button full" id="cloudRotate" type="button">復旧キーを変更して全端末を取り消す</button>
+    </details>
+    <button class="primary-button full" id="cloudSave" type="button">今すぐクラウド保存</button>
+  </div>
+  <hr>
+  <h3>ファイルでバックアップ・移行</h3>
+  <p class="cloud-help">プライベート項目・停止中の項目・全実施履歴を含めて保存します。</p>
+  <button class="secondary-button full" id="cloudExport" type="button">全データを書き出す（JSON）</button>
+  <label class="secondary-button full cloud-import">バックアップを読み込む<input id="cloudImport" type="file" accept=".json,application/json"></label>
+  <button class="secondary-button full" id="cloudSafetyExport" type="button">復元前の退避データを書き出す</button>
+</section>
+
           <section class="settings-card"><h2>停止中の項目</h2><div id="pausedList" class="paused-list"></div></section>
           <section class="settings-card"><h2>URL</h2><div class="url-block"><span>アプリURL</span><code id="appUrl">https://yuuuh26.github.io/sorosoro/</code><button class="copy-button" data-copy="app" type="button">コピー</button></div><div class="url-block"><span>GitHubリポジトリURL</span><code id="repoUrl">https://github.com/yuuuh26/sorosoro</code><button class="copy-button" data-copy="repo" type="button">コピー</button></div></section>
-          <section class="about-card"><img src="./assets/icon-192.png" width="64" height="64" alt=""><div><h2>Soro Soro</h2><p>v1.3.1</p><p>Made by YUU</p></div></section>
+          <section class="about-card"><img src="./assets/icon-192.png" width="64" height="64" alt=""><div><h2>Soro Soro</h2><p>v1.4.0</p><p>Made by YUU</p></div></section>
         </div>
       </section>
     </main>
@@ -70,21 +107,9 @@
   <dialog id="historyEditDialog" class="modal small-modal"><form id="historyEditForm" method="dialog"><div class="modal-header"><div><p class="section-kicker">HISTORY</p><h2>実施日を修正</h2></div><button class="close-button" type="button" data-close="historyEditDialog" aria-label="閉じる">×</button></div><input type="hidden" id="historyEditId"><label class="field"><span>実施日</span><input type="date" id="historyEditDate" required></label><div class="modal-actions split-actions"><button class="danger-button" id="deleteHistory" type="button">履歴を削除</button><div><button class="secondary-button" type="button" data-close="historyEditDialog">戻る</button><button class="primary-button" type="submit">更新</button></div></div></form></dialog>
   <dialog id="confirmDialog" class="confirm-dialog"><form method="dialog"><h2 id="confirmTitle">確認</h2><p id="confirmMessage"></p><div class="modal-actions"><button value="cancel" class="secondary-button">キャンセル</button><button value="confirm" class="danger-solid">削除する</button></div></form></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"><div><strong id="toastTitle"></strong><span id="toastMessage"></span></div><button id="toastAction" type="button" hidden>取り消す</button></div>
-  <script>
-    // Clean up legacy PWA workers/caches. IndexedDB is intentionally untouched.
-    (() => {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations()
-          .then((registrations) => Promise.all(registrations.filter((r) => r.scope.includes('/sorosoro/')).map((r) => r.unregister())))
-          .catch(() => {});
-      }
-      if ('caches' in window) {
-        caches.keys()
-          .then((keys) => Promise.all(keys.filter((key) => key.startsWith('sorosoro-')).map((key) => caches.delete(key))))
-          .catch(() => {});
-      }
-    })();
-  </script>
   <script defer src="./js/app-v130.js?v=1.3.1"></script>
+  <dialog id="newKeyDialog" class="modal small-modal"><h2>新しい復旧キー</h2><p>このキーは1回だけ表示します。安全な場所に保存してください。</p><textarea id="newKey" readonly rows="3" spellcheck="false"></textarea><div class="modal-actions"><button id="newKeyCopy" class="secondary-button">コピー</button><button id="newKeyClose" class="primary-button">保存したので閉じる</button></div></dialog>
+  <script type="module" src="./js/cloud.mjs?v=1.4.0"></script>
 </body>
 </html>
+

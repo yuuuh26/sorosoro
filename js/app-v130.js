@@ -2,7 +2,7 @@
 
 // Soro Soro v1.3.1 — always-visible elapsed days since last completion.
 const DB_NAME = 'sorosoro-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORES = { items: 'items', history: 'history', settings: 'settings' };
 let dbPromise;
 
@@ -12,6 +12,7 @@ function openDatabase() {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     request.onupgradeneeded = () => {
       const db = request.result;
+      if (!db.objectStoreNames.contains('cloud_meta')) db.createObjectStore('cloud_meta', {keyPath:'key'});
       if (!db.objectStoreNames.contains(STORES.items)) {
         const items = db.createObjectStore(STORES.items, { keyPath: 'id' });
         items.createIndex('tab', 'tab');
@@ -29,6 +30,12 @@ function openDatabase() {
     request.onblocked = () => reject(new Error('データベースの更新がブロックされました'));
   });
   return dbPromise;
+}
+
+function trackChange(tx) {
+  const store=tx.objectStore('cloud_meta');
+  const req=store.get('state');
+  req.onsuccess=()=>{const m=req.result||{key:'state',revision:0,sentRevision:0};store.put({...m,revision:m.revision+1});};
 }
 
 function transactionDone(transaction) {
@@ -58,37 +65,45 @@ async function getOne(storeName, key) {
 
 async function putOne(storeName, value) {
   const db = await openDatabase();
-  const tx = db.transaction(storeName, 'readwrite');
+  const tx = db.transaction([storeName, 'cloud_meta'], 'readwrite');
   tx.objectStore(storeName).put(value);
+  if (storeName !== STORES.settings || value.key !== 'schemaVersion') trackChange(tx);
   await transactionDone(tx);
+  window.dispatchEvent(new Event('sorosoro-change'));
   return value;
 }
 
 async function deleteOne(storeName, key) {
   const db = await openDatabase();
-  const tx = db.transaction(storeName, 'readwrite');
+  const tx = db.transaction([storeName, 'cloud_meta'], 'readwrite');
   tx.objectStore(storeName).delete(key);
+  trackChange(tx);
   await transactionDone(tx);
+  window.dispatchEvent(new Event('sorosoro-change'));
 }
 
 async function saveItemWithHistory(item, historyEntry = null) {
   const db = await openDatabase();
-  const tx = db.transaction([STORES.items, STORES.history], 'readwrite');
+  const tx = db.transaction([STORES.items, STORES.history, 'cloud_meta'], 'readwrite');
   tx.objectStore(STORES.items).put(item);
+  trackChange(tx);
   if (historyEntry) tx.objectStore(STORES.history).put(historyEntry);
   await transactionDone(tx);
+  window.dispatchEvent(new Event('sorosoro-change'));
 }
 
 async function deleteItemAndHistory(itemId) {
   const db = await openDatabase();
-  const tx = db.transaction([STORES.items, STORES.history], 'readwrite');
+  const tx = db.transaction([STORES.items, STORES.history, 'cloud_meta'], 'readwrite');
   tx.objectStore(STORES.items).delete(itemId);
+  trackChange(tx);
   const cursorRequest = tx.objectStore(STORES.history).index('itemId').openKeyCursor(IDBKeyRange.only(itemId));
   cursorRequest.onsuccess = () => {
     const cursor = cursorRequest.result;
     if (cursor) { tx.objectStore(STORES.history).delete(cursor.primaryKey); cursor.continue(); }
   };
   await transactionDone(tx);
+  window.dispatchEvent(new Event('sorosoro-change'));
 }
 
 async function getHistoryForItem(itemId) {
@@ -100,27 +115,26 @@ async function getHistoryForItem(itemId) {
 const DAY_MS = 86400000;
 
 function toDateKey(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);
+  const pick=type=>parts.find(p=>p.type===type).value;
+  return `${pick('year')}-${pick('month')}-${pick('day')}`;
 }
 
 function parseDateKey(value) {
   const [year, month, day] = value.split('-').map(Number);
-  return new Date(year, month - 1, day, 12, 0, 0, 0);
+  return new Date(Date.UTC(year, month - 1, day, 3, 0, 0, 0));
 }
 
 function addInterval(dateKey, value, unit) {
   const date = parseDateKey(dateKey);
-  if (unit === 'day') date.setDate(date.getDate() + value);
-  if (unit === 'week') date.setDate(date.getDate() + value * 7);
+  if (unit === 'day') date.setUTCDate(date.getUTCDate() + value);
+  if (unit === 'week') date.setUTCDate(date.getUTCDate() + value * 7);
   if (unit === 'month') {
-    const originalDay = date.getDate();
-    date.setDate(1);
-    date.setMonth(date.getMonth() + value);
-    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-    date.setDate(Math.min(originalDay, lastDay));
+    const originalDay = date.getUTCDate();
+    date.setUTCDate(1);
+    date.setUTCMonth(date.getUTCMonth() + value);
+    const lastDay = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0, 3)).getUTCDate();
+    date.setUTCDate(Math.min(originalDay, lastDay));
   }
   return toDateKey(date);
 }
@@ -132,12 +146,12 @@ function calendarDayDiff(fromKey, toKey) {
 function formatDate(dateKey, includeYear = false) {
   if (!dateKey) return '記録なし';
   const options = includeYear ? { year: 'numeric', month: 'short', day: 'numeric' } : { month: 'short', day: 'numeric' };
-  return new Intl.DateTimeFormat('ja-JP', options).format(parseDateKey(dateKey));
+  return new Intl.DateTimeFormat('ja-JP', {...options,timeZone:'Asia/Tokyo'}).format(parseDateKey(dateKey));
 }
 
 function formatLongDate(dateKey) {
   if (!dateKey) return '記録なし';
-  return new Intl.DateTimeFormat('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }).format(parseDateKey(dateKey));
+  return new Intl.DateTimeFormat('ja-JP', { timeZone:'Asia/Tokyo',year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' }).format(parseDateKey(dateKey));
 }
 
 function priorityEnabled(item) {
@@ -180,7 +194,7 @@ function elapsedSinceLastLabel(item, today = toDateKey()) {
 }
 
 
-const APP_URL = 'https://yuuuh26.github.io/sorosoro/';
+const APP_URL = location.origin + location.pathname;
 const REPO_URL = 'https://github.com/yuuuh26/sorosoro';
 const state = { items: [], history: [], route: 'home', undo: null, toastTimer: null, privacyVisible: false };
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -536,7 +550,7 @@ function bindEvents() {
 }
 
 async function initialize() {
-  $('#todayLabel').textContent = new Intl.DateTimeFormat('ja-JP', { month: 'long', day: 'numeric', weekday: 'short' }).format(new Date());
+  $('#todayLabel').textContent = new Intl.DateTimeFormat('ja-JP', { timeZone:'Asia/Tokyo',month: 'long', day: 'numeric', weekday: 'short' }).format(new Date());
   $('#appUrl').textContent = APP_URL; $('#repoUrl').textContent = REPO_URL;
   bindEvents();
   try {
@@ -547,6 +561,9 @@ async function initialize() {
     await refreshData();
   } catch (error) { $('#dbStatus').textContent = '利用不可'; showToast('保存機能を使用できません', 'ブラウザ設定を確認してください'); console.error(error); }
   window.__SOROSORO_APP_READY__ = true;
+  window.dispatchEvent(new Event('sorosoro-ready'));
 }
 
+window.SoroSoro = {openDatabase, transactionDone, requestResult, refreshData, confirmAction, showToast};
 initialize();
+

@@ -3,9 +3,9 @@
   "short_name": "Soro Soro",
   "description": "暮らしの周期を軽やかに整える個人用周期管理アプリ",
   "lang": "ja",
-  "id": "/sorosoro/",
-  "start_url": "/sorosoro/",
-  "scope": "/sorosoro/",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#f3f8f7",
@@ -37,3 +37,4 @@
     }
   ]
 }
+
