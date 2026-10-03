@@ -34,3 +34,8 @@ Cloudflare Workersと専用D1。アプリごとにキー・通行証・Cookie・
 `cloudflare/migrations`はバージョン順に適用し、既存DBを初期化しない。Cloudflare管理トークンや復旧キーをリポジトリに含めない。`cloudflare/dist`はビルド成果物でGit対象外。
 
 検証: 未認証/別アプリ/別Origin拒否、Cookie属性、管理操作保護、取消/名前変更/キー変更、履歴5件、同一ID再送、破損/通信失敗の保全、オフライン/再起動/送信中編集、参照時非保存、全データ復元・退避・競合検出。
+
+
+## Shared Cloudflare D1
+
+The production Worker uses `personal-apps-shared` and the dedicated SQL prefix `sorosoro`. Recipe Deck keeps its own database. `wrangler.jsonc` records the production binding; build before deploying. Keep the existing `BACKUP_TOKEN_SHA256` secret. Every app has separate tables, session cookies, key rotation, foreign keys, retention guards and history. The optional `DB_MIGRATION_MODE=1` variable pauses API requests with 503 while moving data; remove it before normal operation. Without `DB_TABLE_PREFIX`, legacy dedicated database deployments continue to work. Existing local IndexedDB and frontend URLs are unchanged.
